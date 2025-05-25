@@ -2,8 +2,10 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorOnText">#908F8F</color>
 
     <color name="colorOnCard">#262838</color>
+    <color name="colorOnEdit">#4D506A</color>
 
     <color name="colorBackground">#1F222C</color>
     <color name="colorOnBackground">#FFFFFF</color>

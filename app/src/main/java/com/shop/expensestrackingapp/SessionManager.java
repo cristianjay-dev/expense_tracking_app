@@ -48,5 +48,7 @@ public class SessionManager {
         editor.clear();
         editor.apply();
     }
+
+
 }
 

@@ -18,6 +18,7 @@ import java.util.Objects;
 public class DashboardActivity extends AppCompatActivity {
 
     ActivityDashboardBinding binding;
+    SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +32,15 @@ public class DashboardActivity extends AppCompatActivity {
             return insets;
 
         });
+        sessionManager = new SessionManager(this);
+
+        // Set user's first name to txtUser
+        String firstName = sessionManager.getFirstName();
+        binding.txtUser.setText(firstName);
+
+
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment()); // Assuming you have a HomeFragment
+            loadFragment(new HomeFragment());
         }
 
         binding.navHome.setOnClickListener(v -> loadFragment(new HomeFragment()));
@@ -68,7 +76,5 @@ public class DashboardActivity extends AppCompatActivity {
 
         dialog.show();
     }
-
-
 
 }

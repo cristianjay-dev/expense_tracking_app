@@ -124,5 +124,16 @@ public class DatabaseGateway extends SQLiteOpenHelper {
         cursor.close();
         return null;
     }
+    public Cursor getUserById(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT firstname, lastname, email, profile_image FROM users WHERE user_id = ?",
+                new String[]{String.valueOf(userId)});
+    }
+    public void updateUserProfileImage(int userId, byte[] imageBytes) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_PROFILE_IMAGE, imageBytes);
+        db.update(TABLE_USERS, values, COL_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+    }
 
 }
