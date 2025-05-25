@@ -115,7 +115,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddCustom"
+        android:id="@+id/fab_addExpense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="Add"
@@ -129,26 +129,6 @@
         app:layout_constraintStart_toStartOf="@+id/fab_spacer"
         app:layout_constraintEnd_toEndOf="@+id/fab_spacer" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Floating Action Button -->
-
-
-
-    <!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-    <!--        android:id="@+id/fabAdd"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:contentDescription="Add item"-->
-    <!--        android:src="@drawable/ic_add"-->
-    <!--        app:backgroundTint="@color/colorPrimary"-->
-    <!--        app:tint="@color/white"-->
-    <!--        app:fabCustomSize="60dp"-->
-    <!--        app:elevation="4dp"-->
-    <!--        app:layout_constraintBottom_toTopOf="@+id/bottomNavView"-->
-    <!--        app:layout_constraintStart_toStartOf="parent"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintTop_toTopOf="@+id/bottomNavView" />-->
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
