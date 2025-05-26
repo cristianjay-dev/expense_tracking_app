@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -70,8 +71,8 @@ public class DatabaseGateway extends SQLiteOpenHelper {
     }
     public boolean checkEmailExists(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ?", new String[]{email});
-        boolean exists = cursor.getCount() > 0;
+        Cursor cursor = db.rawQuery("SELECT " + COL_USER_ID + " FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ? LIMIT 1", new String[]{email});
+        boolean exists = cursor.moveToFirst(); // Changed from getCount() > 0 to moveToFirst() for consistency and slight efficiency
         cursor.close();
         return exists;
     }
@@ -90,24 +91,17 @@ public class DatabaseGateway extends SQLiteOpenHelper {
     public int getUserIdByEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT " + COL_USER_ID + " FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ?", new String[]{email});
-        int userId = -1;
+        int userId = -1; // Default if not found
         if (cursor.moveToFirst()) {
-            userId = cursor.getInt(0);
+            userId = cursor.getInt(cursor.getColumnIndexOrThrow(COL_USER_ID));
         }
         cursor.close();
         return userId;
     }
-    public boolean validateUser(String email, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS +
-                " WHERE " + COL_EMAIL + " = ? AND " + COL_PASSWORD + " = ?", new String[]{email, password});
-        boolean isValid = cursor.getCount() > 0;
-        cursor.close();
-        return isValid;
-    }
     public boolean checkLogin(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM users WHERE email = ? AND password = ?", new String[]{email, password});
+        Cursor cursor = db.rawQuery("SELECT " + COL_USER_ID + " FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ? AND " + COL_PASSWORD + " = ?", new String[]{email, password});
+
         boolean result = cursor.moveToFirst();
         cursor.close();
         return result;
@@ -126,14 +120,35 @@ public class DatabaseGateway extends SQLiteOpenHelper {
     }
     public Cursor getUserById(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT firstname, lastname, email, profile_image FROM users WHERE user_id = ?",
+        return db.rawQuery("SELECT " + COL_FIRSTNAME + ", " + COL_LASTNAME + ", " + COL_EMAIL + ", " + COL_PROFILE_IMAGE +
+                        " FROM " + TABLE_USERS + " WHERE " + COL_USER_ID + " = ?",
                 new String[]{String.valueOf(userId)});
     }
-    public void updateUserProfileImage(int userId, byte[] imageBytes) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COL_PROFILE_IMAGE, imageBytes);
-        db.update(TABLE_USERS, values, COL_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+    public boolean updateUserProfileImage(int userId, byte[] imageBytes) {
+        SQLiteDatabase db = null; // Initialize to null
+        int rowsAffected = 0;
+        try {
+            db = this.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(COL_PROFILE_IMAGE, imageBytes);
+
+            // The 'where' clause for the update query
+            String selection = COL_USER_ID + " = ?";
+            String[] selectionArgs = {String.valueOf(userId)};
+
+            rowsAffected = db.update(TABLE_USERS, values, selection, selectionArgs);
+            Log.d("DatabaseGateway", "updateUserProfileImage: userId=" + userId + ", rowsAffected=" + rowsAffected);
+
+        } catch (Exception e) {
+            Log.e("DatabaseGateway", "Error updating user profile image for userId: " + userId, e);
+            // rowsAffected will remain 0 or could be set to -1 to indicate error
+            return false; // Indicate failure due to exception
+        } finally {
+            if (db != null && db.isOpen()) {
+                 db.close();
+             }
+        }
+        return rowsAffected > 0;
     }
 
 }

@@ -37,10 +37,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         binding.btnLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(this, DashboardActivity.class);
-            startActivity(intent);
-        });
-        binding.btnLogin.setOnClickListener(v -> {
             String email = Objects.requireNonNull(binding.edtEmail.getText()).toString().trim();
             String password = Objects.requireNonNull(binding.edtPassword.getText()).toString();
 
