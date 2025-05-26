@@ -48,6 +48,15 @@ public class SessionManager {
         editor.clear();
         editor.apply();
     }
+    public void updateFirstName(String newFirstName) {
+        editor.putString(KEY_FIRST_NAME, newFirstName); // Ensure KEY_FIRST_NAME is defined
+        editor.apply();
+    }
+
+    public void updateEmail(String newEmail) {
+        editor.putString(KEY_EMAIL, newEmail);
+        editor.apply();
+    }
 
 
 }

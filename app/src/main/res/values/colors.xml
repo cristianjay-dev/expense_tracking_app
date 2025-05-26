@@ -20,4 +20,5 @@
     <color name="colorPlaceholderText">#575757</color>
 
     <color name="colorOnSave">#07B0C7</color>
+    <color name="colorOnExpense">#FF3B30</color>
 </resources>

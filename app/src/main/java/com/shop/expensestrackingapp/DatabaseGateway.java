@@ -150,5 +150,15 @@ public class DatabaseGateway extends SQLiteOpenHelper {
         }
         return rowsAffected > 0;
     }
+    public boolean updateUserProfile(int userId, String firstName, String lastName, String email) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_FIRSTNAME, firstName);
+        values.put(COL_LASTNAME, lastName);
+        values.put(COL_EMAIL, email);
+        int rowsAffected = db.update(TABLE_USERS, values, COL_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+        Log.d("DatabaseGateway", "updateUserProfile for userId " + userId + ": rowsAffected=" + rowsAffected);
+        return rowsAffected > 0;
+    }
 
 }

@@ -1,14 +1,276 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     tools:context=".HomeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp">
 
-</FrameLayout>
+        <!-- 1. Top Section: Budget Period -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBudgetPeriod"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+            android:layout_width="250dp"
+            android:layout_height="61dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/poppins_regular"
+            android:hint="Budget Period"
+            android:textColorHint="@color/colorOnBackground"
+            app:hintTextColor="@color/colorOnBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvBudgetPeriod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_dropdown"
+                android:fontFamily="@font/poppins_regular"
+                android:inputType="none"
+                android:textColor="@color/colorOnBackground"
+
+                tools:text="This Week" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <!-- 2. Main Card: Budget Status -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardBudgetStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/colorOnCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilBudgetPeriod">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvRemainingBudgetLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Budget Remaining"
+                    android:fontFamily="@font/poppins_regular"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvRemainingBudgetAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    tools:text="$2,683.42"
+                    android:textAppearance="?attr/textAppearanceHeadline4"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvRemainingBudgetLabel" />
+
+                <TextView
+                    android:id="@+id/tvBudgetUpdatedDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    tools:text="Budget set on 16/12/2024"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textSize="10sp"
+                    android:fontFamily="@font/poppins_regular"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvRemainingBudgetAmount"
+                    tools:ignore="SmallSp" />
+
+                <ProgressBar
+                    android:id="@+id/progressBarBudget"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:max="100"
+                    tools:progress="60"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvBudgetUpdatedDate" />
+
+                <TextView
+                    android:id="@+id/tvTotalBudgetAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Total: $5,000"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/progressBarBudget"/>
+
+                <TextView
+                    android:id="@+id/tvBudgetPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="60% spent"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/progressBarBudget"/>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 3. Summary Cards: Total Spent -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardTotalSpent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/colorOnCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardBudgetStatus">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Spent (This Period)"
+                        android:fontFamily="@font/poppins_regular"
+                        android:textAppearance="?attr/textAppearanceBody2"/>
+                    <TextView
+                        android:id="@+id/tvTotalSpentAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="-$3,142"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textColor="@color/colorOnExpense"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+                <!-- Add another LinearLayout here for "Average Daily Spend" if needed -->
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- 4. Action Buttons -->
+        <LinearLayout
+            android:id="@+id/layoutActionButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardTotalSpent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSetBudget"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Set Budget"
+                android:fontFamily="@font/poppins_semibold"
+                android:textAllCaps="false"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddExpenseFromActions"
+                style="@style/Widget.MaterialComponents.Button.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Add Expense"
+                android:fontFamily="@font/poppins_semibold"
+                android:textAllCaps="false"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+        <!-- 5. Recent Expenses List -->
+        <TextView
+            android:id="@+id/tvRecentExpensesLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="Recent Expenses"
+            android:fontFamily="@font/poppins_semibold"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutActionButtons" />
+
+        <TextView
+            android:id="@+id/tvManageExpenses"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manage"
+            android:textColor="?attr/colorPrimaryVariant"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins_semibold"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintStart_toEndOf="@id/tvRecentExpensesLabel"
+            app:layout_constraintEnd_toStartOf="@id/btnAddExpenseFromList"
+            app:layout_constraintTop_toTopOf="@id/tvRecentExpensesLabel"
+            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel" />
+
+        <TextView
+            android:id="@+id/btnAddExpenseFromList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="+ Add New"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins_semibold"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvRecentExpensesLabel"
+            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewExpenses"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvManageExpenses"
+            tools:listitem="@layout/item_expense"
+            tools:itemCount="3"
+            android:nestedScrollingEnabled="false"/> <!-- Important for RecyclerView inside ScrollView -->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardBackgroundColor="@color/colorOnCard"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/ivExpenseCategoryIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            tools:srcCompat="@tools:sample/avatars"
+            android:contentDescription="Category Icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/tvExpenseName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            tools:text="Spotify Premium"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins_semibold"
+            app:layout_constraintStart_toEndOf="@id/ivExpenseCategoryIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvExpenseAmount"/>
+
+        <TextView
+            android:id="@+id/tvExpenseDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            tools:text="16 December - 02.34pm"
+            android:fontFamily="@font/poppins_regular"
+            android:textAppearance="?attr/textAppearanceCaption"
+            app:layout_constraintStart_toEndOf="@id/ivExpenseCategoryIcon"
+            app:layout_constraintTop_toBottomOf="@id/tvExpenseName"
+            app:layout_constraintEnd_toEndOf="@id/tvExpenseName"/>
+
+        <TextView
+            android:id="@+id/tvExpenseAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            tools:text="-$176"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnExpense"
+            app:layout_constraintEnd_toStartOf="@id/btnDeleteExpense"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/btnDeleteExpense"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_remove"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete Expense"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:tint="@android:color/holo_red_dark"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

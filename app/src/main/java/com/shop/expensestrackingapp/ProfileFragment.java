@@ -4,6 +4,7 @@ package com.shop.expensestrackingapp;
 import static android.content.ContentValues.TAG;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.os.ParcelFileDescriptor;
@@ -31,6 +33,7 @@ import com.shop.expensestrackingapp.databinding.FragmentProfileBinding;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 
 /**
@@ -210,7 +213,7 @@ public class ProfileFragment extends Fragment {
             redirectToLogin();
         });
         binding.btnEditProfile.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Edit Profile action (not implemented)", Toast.LENGTH_SHORT).show();
+            showDialog();
         });
 
         return view;
@@ -415,6 +418,26 @@ public class ProfileFragment extends Fragment {
         super.onDestroyView();
         binding = null;
         Log.d(TAG, "onDestroyView called, binding set to null.");
+    }
+    private void showDialog() {
+        Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.activity_profile_edit);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(R.drawable.popup_modal);
+        Toolbar toolbar = dialog.findViewById(R.id.toolbarEdit);
+
+        // Inflate the toolbar menu
+        toolbar.inflateMenu(R.menu.toolbar_menu);
+
+        // Handle toolbar menu item click (like the close button)
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.btnClose) {
+                dialog.dismiss(); // Close the dialog
+                return true;
+            }
+            return false;
+        });
+
+        dialog.show();
     }
 
 }
