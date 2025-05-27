@@ -398,5 +398,15 @@ public class DatabaseGateway extends SQLiteOpenHelper {
                 " ORDER BY " + COL_BUDGET_CREATED_AT + " DESC LIMIT 1";
         return db.rawQuery(query, new String[]{String.valueOf(userId), periodType});
     }
+    public boolean deleteBudget(int userId, String periodType, String budgetStartDate) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_BUDGETS,
+                COL_BUDGET_USER_ID + " = ? AND " +
+                        COL_BUDGET_PERIOD_TYPE + " = ? AND " +
+                        COL_BUDGET_START_DATE + " = ?",
+                new String[]{String.valueOf(userId), periodType, budgetStartDate});
+        Log.d("DatabaseGateway", "Deleting budget for user " + userId + ", period " + periodType + ", start " + budgetStartDate + ". Rows affected: " + result);
+        return result > 0;
+    }
 
 }

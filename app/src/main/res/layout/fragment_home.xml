@@ -97,6 +97,23 @@
                     app:layout_constraintTop_toBottomOf="@id/tvRemainingBudgetAmount"
                     tools:ignore="SmallSp" />
 
+
+                <ImageButton
+                    android:id="@+id/btnDeleteBudget"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Delete Current Budget"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone"
+                    android:elevation="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="?attr/colorError"
+                    tools:visibility="visible"/>
+
                 <ProgressBar
                     android:id="@+id/progressBarBudget"
                     style="?android:attr/progressBarStyleHorizontal"

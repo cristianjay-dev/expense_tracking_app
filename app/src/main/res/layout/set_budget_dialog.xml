@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:backgroundTint="@color/colorBackground"
+    android:background="@drawable/popup_modal">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarBudget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:menu="@menu/toolbar_menu">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Budget"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:fontFamily="@font/poppins_semibold"
+        android:textColor="@color/colorOnBackground"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"/>
+    </androidx.appcompat.widget.Toolbar>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilBudgetAmount"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_regular"
+        android:textColorHint="@color/colorOnText"
+        android:textColor="@color/colorOnBackground"
+        app:boxStrokeColor="@color/colorInputBorder"
+
+        android:hint="Budget Amount (PHP)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etBudgetAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="For Period:"
+        android:layout_marginTop="16dp"
+        android:textAppearance="?attr/textAppearanceSubtitle2"/>
+
+    <RadioGroup
+        android:id="@+id/rgBudgetPeriod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rbThisWeek"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/colorOnBackground"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Weekly"
+            android:checked="true"/> <!-- Default selection -->
+
+        <RadioButton
+            android:id="@+id/rbThisMonth"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Monthly"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnBackground"/>
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btnDialogSetBudget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_semibold"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:text="Set Budget" />
+
+    <Button
+        android:id="@+id/btnDialogCancelBudget"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/poppins_semibold"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:text="Cancel" />
+
+</LinearLayout>
