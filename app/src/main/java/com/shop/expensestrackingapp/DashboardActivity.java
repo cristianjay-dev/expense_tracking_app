@@ -1,7 +1,10 @@
 package com.shop.expensestrackingapp;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.Dialog;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +13,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.shop.expensestrackingapp.databinding.ActivityDashboardBinding;
 
@@ -48,7 +52,7 @@ public class DashboardActivity extends AppCompatActivity {
         binding.navStats.setOnClickListener(v -> loadFragment(new StatsFragment()));
         binding.navProfile.setOnClickListener(v -> loadFragment(new ProfileFragment()));
 
-        binding.fabAddExpense.setOnClickListener( v -> showDialog());
+        binding.fabAddExpense.setOnClickListener( v -> showAddExpenseDialog());
     }
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
@@ -56,25 +60,15 @@ public class DashboardActivity extends AppCompatActivity {
                 .replace(binding.frameLayout.getId(), fragment)
                 .commit();
     }
-    private void showDialog() {
-        Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.activity_add_expense);
-        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawableResource(R.drawable.popup_modal);
-        Toolbar toolbar = dialog.findViewById(R.id.toolbarExpense);
+    private void showAddExpenseDialog() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AddExpenseDialog addExpenseDialog = new AddExpenseDialog(); // Create an instance of your DialogFragment
 
-        // Inflate the toolbar menu
-        toolbar.inflateMenu(R.menu.toolbar_menu);
+        // You can set the listener later when HomeFragment is ready
+        // addExpenseDialog.setAddExpenseDialogListener(this_or_homeFragment_instance);
 
-        // Handle toolbar menu item click (like the close button)
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.btnClose) {
-                dialog.dismiss(); // Close the dialog
-                return true;
-            }
-            return false;
-        });
-
-        dialog.show();
+        addExpenseDialog.show(fragmentManager, "AddExpenseDialogTag"); // Show the dialog
+        Log.d(TAG, "Attempting to show AddExpenseDialog.");
     }
 
 }
