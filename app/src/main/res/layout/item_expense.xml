@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -19,8 +20,8 @@
 
         <ImageView
             android:id="@+id/ivExpenseCategoryIcon"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:contentDescription="Category Icon"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -28,7 +29,7 @@
             tools:srcCompat="@tools:sample/avatars" />
 
         <TextView
-            android:id="@+id/tvExpenseName"
+            android:id="@+id/tvCategoryName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -40,6 +41,17 @@
             app:layout_constraintStart_toEndOf="@id/ivExpenseCategoryIcon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tvExpenseAmount"/>
+        <TextView
+            android:id="@+id/tvExpenseNote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            tools:text="Note"
+            android:fontFamily="@font/poppins_regular"
+            android:textAppearance="?attr/textAppearanceCaption"
+            app:layout_constraintStart_toEndOf="@id/ivExpenseCategoryIcon"
+            app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
+            app:layout_constraintEnd_toEndOf="@id/tvCategoryName"/>
 
         <TextView
             android:id="@+id/tvExpenseDate"
@@ -50,8 +62,8 @@
             android:fontFamily="@font/poppins_regular"
             android:textAppearance="?attr/textAppearanceCaption"
             app:layout_constraintStart_toEndOf="@id/ivExpenseCategoryIcon"
-            app:layout_constraintTop_toBottomOf="@id/tvExpenseName"
-            app:layout_constraintEnd_toEndOf="@id/tvExpenseName"/>
+            app:layout_constraintTop_toBottomOf="@+id/tvExpenseNote"
+            app:layout_constraintEnd_toEndOf="@+id/tvExpenseNote"/>
 
         <TextView
             android:id="@+id/tvExpenseAmount"

@@ -36,6 +36,7 @@ public class AddExpenseDialog extends DialogFragment {
         void onExpenseAddedSuccess();
         // Add other methods if needed
     }
+
     private AddExpenseDialogListener listener;
 
     // Call this from the calling Fragment/Activity to set the listener
@@ -223,9 +224,9 @@ public class AddExpenseDialog extends DialogFragment {
         if (success) {
             Toast.makeText(requireContext(), "Expense added successfully!", Toast.LENGTH_SHORT).show();
             if (listener != null) {
-                listener.onExpenseAddedSuccess();
+                listener.onExpenseAddedSuccess(); // <-- CALL THE LISTENER HERE
             }
-            dismiss();
+            dismiss(); // Close the dialog
         } else {
             Toast.makeText(requireContext(), "Failed to add expense. Please try again.", Toast.LENGTH_LONG).show();
             Log.e(TAG, "Failed to insert expense into database.");

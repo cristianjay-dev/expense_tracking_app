@@ -224,8 +224,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Recent Expenses"
             android:fontFamily="@font/poppins_semibold"
+            android:text="Recent Expenses"
             android:textAppearance="?attr/textAppearanceHeadline6"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layoutActionButtons" />
@@ -234,42 +234,28 @@
             android:id="@+id/tvManageExpenses"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="128dp"
+            android:background="?attr/selectableItemBackground"
+            android:fontFamily="@font/poppins_semibold"
+            android:padding="8dp"
             android:text="Manage"
             android:textColor="?attr/colorPrimaryVariant"
             android:textStyle="bold"
-            android:fontFamily="@font/poppins_semibold"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackground"
+            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel"
             app:layout_constraintStart_toEndOf="@id/tvRecentExpensesLabel"
-            app:layout_constraintEnd_toStartOf="@id/btnAddExpenseFromList"
             app:layout_constraintTop_toTopOf="@id/tvRecentExpensesLabel"
-            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel" />
-
-        <TextView
-            android:id="@+id/btnAddExpenseFromList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="+ Add New"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold"
-            android:fontFamily="@font/poppins_semibold"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvRecentExpensesLabel"
-            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel"/>
+            app:layout_constraintVertical_bias="0.0" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewExpenses"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:background="@color/colorBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvManageExpenses"
             tools:listitem="@layout/item_expense"
-            tools:itemCount="3"
             android:nestedScrollingEnabled="false"/> <!-- Important for RecyclerView inside ScrollView -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>

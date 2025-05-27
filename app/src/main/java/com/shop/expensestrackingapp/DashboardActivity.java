@@ -19,10 +19,12 @@ import com.shop.expensestrackingapp.databinding.ActivityDashboardBinding;
 
 import java.util.Objects;
 
-public class DashboardActivity extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity implements AddExpenseDialog.AddExpenseDialogListener {
 
     ActivityDashboardBinding binding;
     SessionManager sessionManager;
+    private static final String TAG = "DashboardActivity"; // Define TAG for this class
+    private static final String HOME_FRAGMENT_TAG = "HomeFragmentInstanceTag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,35 +42,63 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Set user's first name to txtUser
         String firstName = sessionManager.getFirstName();
-        binding.txtUser.setText(firstName);
+        if (firstName != null) {
+            binding.txtUser.setText(firstName);
+        } else {
+            binding.txtUser.setText("User"); // Fallback
+            Log.w(TAG, "First name not found in session for txtUser.");
+        }
 
 
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+            loadFragment(new HomeFragment(), HOME_FRAGMENT_TAG); // Load with tag
         }
 
-        binding.navHome.setOnClickListener(v -> loadFragment(new HomeFragment()));
-        binding.navHistory.setOnClickListener(v -> loadFragment(new HistoryFragment()));
-        binding.navStats.setOnClickListener(v -> loadFragment(new StatsFragment()));
-        binding.navProfile.setOnClickListener(v -> loadFragment(new ProfileFragment()));
+        binding.navHome.setOnClickListener(v -> loadFragment(new HomeFragment(), HOME_FRAGMENT_TAG));
+        binding.navHistory.setOnClickListener(v -> loadFragment(new HistoryFragment(), "HistoryFragmentTag"));
+        binding.navStats.setOnClickListener(v -> loadFragment(new StatsFragment(), "StatsFragmentTag"));
+        binding.navProfile.setOnClickListener(v -> loadFragment(new ProfileFragment(), "ProfileFragmentTag"));
 
-        binding.fabAddExpense.setOnClickListener( v -> showAddExpenseDialog());
+        binding.fabAddExpense.setOnClickListener(v -> showAddExpenseDialog());
     }
-    private void loadFragment(Fragment fragment) {
+
+    // Modified to accept and use a tag
+    private void loadFragment(Fragment fragment, String tag) {
+        Log.d(TAG, "Loading fragment: " + fragment.getClass().getSimpleName() + " with tag: " + tag);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(binding.frameLayout.getId(), fragment)
+                .replace(binding.frameLayout.getId(), fragment, tag) // Use the tag
                 .commit();
     }
+
     private void showAddExpenseDialog() {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        AddExpenseDialog addExpenseDialog = new AddExpenseDialog(); // Create an instance of your DialogFragment
+        AddExpenseDialog addExpenseDialog = new AddExpenseDialog();
 
-        // You can set the listener later when HomeFragment is ready
-        // addExpenseDialog.setAddExpenseDialogListener(this_or_homeFragment_instance);
+        // Set DashboardActivity as the listener for the dialog
+        addExpenseDialog.setAddExpenseDialogListener(this);
 
-        addExpenseDialog.show(fragmentManager, "AddExpenseDialogTag"); // Show the dialog
+        addExpenseDialog.show(fragmentManager, "AddExpenseDialogTag");
         Log.d(TAG, "Attempting to show AddExpenseDialog.");
     }
 
+    // Implementation of the listener method from AddExpenseDialog
+    @Override
+    public void onExpenseAddedSuccess() {
+        Log.d(TAG, "onExpenseAddedSuccess callback received in DashboardActivity.");
+
+        // Find the HomeFragment instance using the tag
+        Fragment homeFragment = getSupportFragmentManager().findFragmentByTag(HOME_FRAGMENT_TAG);
+
+        if (homeFragment instanceof HomeFragment) {
+            Log.d(TAG, "HomeFragment found. Calling refreshAllData().");
+            ((HomeFragment) homeFragment).refreshAllData(); // Call public method in HomeFragment
+        } else {
+            Log.w(TAG, "HomeFragment not found with tag: " + HOME_FRAGMENT_TAG +
+                    ". Cannot call refreshAllData directly. HomeFragment's onResume should handle refresh if it becomes active.");
+            if (homeFragment != null) {
+                Log.w(TAG, "Fragment found by tag is of type: " + homeFragment.getClass().getSimpleName());
+            }
+        }
+    }
 }
