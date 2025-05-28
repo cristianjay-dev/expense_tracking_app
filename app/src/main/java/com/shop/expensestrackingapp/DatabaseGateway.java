@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 public class DatabaseGateway extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "SmartSpend.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     // User Table
     public static final String TABLE_USERS = "users";
@@ -48,6 +48,16 @@ public class DatabaseGateway extends SQLiteOpenHelper {
     public static final String COL_EXPENSE_NOTE = "note";
     public static final String COL_EXPENSE_TIMESTAMP = "timestamp";
     // Format: "YYYY-MM-DD HH:MM:SS"
+
+    public static final String TABLE_BUDGET_HISTORY = "budget_history";
+    public static final String COL_HISTORY_ID = "history_id";
+    public static final String COL_HISTORY_USER_ID = "user_id";
+    public static final String COL_HISTORY_PERIOD_TYPE = "period_type"; // "WEEKLY", "MONTHLY"
+    public static final String COL_HISTORY_BUDGET_AMOUNT_SET = "budget_amount_set";
+    public static final String COL_HISTORY_TOTAL_SPENT = "total_spent_in_period";
+    public static final String COL_HISTORY_PERIOD_START_DATE = "period_start_date"; // YYYY-MM-DD
+    public static final String COL_HISTORY_PERIOD_END_DATE = "period_end_date";   // YYYY-MM-DD
+    public static final String COL_HISTORY_SUMMARY_CREATED_AT = "summary_created_at"; // YYYY-MM-DD HH:MM:SS
 
 
     public DatabaseGateway(@Nullable Context context) {
@@ -94,11 +104,23 @@ public class DatabaseGateway extends SQLiteOpenHelper {
                 COL_BUDGET_CREATED_AT + " TEXT, " +
                 "FOREIGN KEY (" + COL_BUDGET_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COL_USER_ID + ")" +
                 ");";
+        String createBudgetHistoryTable = "CREATE TABLE " + TABLE_BUDGET_HISTORY + " (" +
+                COL_HISTORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_HISTORY_USER_ID + " INTEGER, " +
+                COL_HISTORY_PERIOD_TYPE + " TEXT NOT NULL, " +
+                COL_HISTORY_BUDGET_AMOUNT_SET + " REAL NOT NULL, " +
+                COL_HISTORY_TOTAL_SPENT + " REAL NOT NULL, " +
+                COL_HISTORY_PERIOD_START_DATE + " TEXT NOT NULL, " +
+                COL_HISTORY_PERIOD_END_DATE + " TEXT NOT NULL, " +
+                COL_HISTORY_SUMMARY_CREATED_AT + " TEXT NOT NULL, " +
+                "FOREIGN KEY (" + COL_HISTORY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COL_USER_ID + ")" +
+                ");";
 
         db.execSQL(createUserTable);
-        db.execSQL(createCategoriesTable); // Categories table must be created before expenses if FK relies on it
+        db.execSQL(createCategoriesTable);
         db.execSQL(createExpenseTable);
         db.execSQL(createBudgetTable);
+        db.execSQL(createBudgetHistoryTable);
 
         populatePredefinedCategories(db);
     }
@@ -176,7 +198,78 @@ public class DatabaseGateway extends SQLiteOpenHelper {
             db.execSQL(createExpenseTableSQL);
             Log.i("DatabaseGateway", "TABLE_EXPENSES recreated for V2 schema.");
         }
+        if (oldVersion < 3) { // NEW: Upgrade logic for versions less than 3 (e.g., from V2 to V3)
+            Log.d("DatabaseGateway", "Applying V3 schema changes (from version " + oldVersion + "): Adding Budget History table.");
+            String createBudgetHistoryTable = "CREATE TABLE " + TABLE_BUDGET_HISTORY + " (" +
+                    COL_HISTORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_HISTORY_USER_ID + " INTEGER, " +
+                    COL_HISTORY_PERIOD_TYPE + " TEXT NOT NULL, " +
+                    COL_HISTORY_BUDGET_AMOUNT_SET + " REAL NOT NULL, " +
+                    COL_HISTORY_TOTAL_SPENT + " REAL NOT NULL, " +
+                    COL_HISTORY_PERIOD_START_DATE + " TEXT NOT NULL, " +
+                    COL_HISTORY_PERIOD_END_DATE + " TEXT NOT NULL, " +
+                    COL_HISTORY_SUMMARY_CREATED_AT + " TEXT NOT NULL, " +
+                    "FOREIGN KEY (" + COL_HISTORY_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COL_USER_ID + ")" +
+                    ");";
+            db.execSQL(createBudgetHistoryTable);
+            Log.i("DatabaseGateway", TABLE_BUDGET_HISTORY + " table created for V3 schema.");
+        }
 
+    }
+    public boolean addBudgetHistory(int userId, String periodType, double budgetAmountSet,
+                                    double totalSpentInPeriod, String periodStartDate, String periodEndDate,
+                                    String summaryCreatedAt) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_HISTORY_USER_ID, userId);
+        values.put(COL_HISTORY_PERIOD_TYPE, periodType);
+        values.put(COL_HISTORY_BUDGET_AMOUNT_SET, budgetAmountSet);
+        values.put(COL_HISTORY_TOTAL_SPENT, totalSpentInPeriod);
+        values.put(COL_HISTORY_PERIOD_START_DATE, periodStartDate);
+        values.put(COL_HISTORY_PERIOD_END_DATE, periodEndDate);
+        values.put(COL_HISTORY_SUMMARY_CREATED_AT, summaryCreatedAt); // Format: YYYY-MM-DD HH:MM:SS
+
+        long result = db.insert(TABLE_BUDGET_HISTORY, null, values);
+        if (result == -1) {
+            Log.e("DatabaseGateway", "Failed to insert budget history for user " + userId + " period " + periodStartDate);
+        } else {
+            Log.d("DatabaseGateway", "Budget history added for user " + userId + " period " + periodStartDate + ", History ID: " + result);
+        }
+        return result != -1;
+    }
+
+    public Cursor getBudgetHistory(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_BUDGET_HISTORY, null,
+                COL_HISTORY_USER_ID + " = ?", new String[]{String.valueOf(userId)},
+                null, null, COL_HISTORY_PERIOD_START_DATE + " DESC"); // Show newest history first
+    }
+    public boolean budgetHistoryExists(int userId, String periodType, String periodStartDate) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_BUDGET_HISTORY, new String[]{COL_HISTORY_ID},
+                COL_HISTORY_USER_ID + " = ? AND " +
+                        COL_HISTORY_PERIOD_TYPE + " = ? AND " +
+                        COL_HISTORY_PERIOD_START_DATE + " = ?",
+                new String[]{String.valueOf(userId), periodType, periodStartDate},
+                null, null, null, "1");
+        boolean exists = (cursor != null && cursor.getCount() > 0);
+        if (cursor != null) {
+            cursor.close();
+        }
+        Log.d("DatabaseGateway", "Budget history check for user " + userId + ", period " + periodType + ", start " + periodStartDate + ": " + exists);
+        return exists;
+    }
+    public Cursor getEndedBudgetsWithoutHistory(int userId, String todayDateStr_YYYY_MM_DD) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT b.* FROM " + TABLE_BUDGETS + " b " +
+                "LEFT JOIN " + TABLE_BUDGET_HISTORY + " bh ON b." + COL_BUDGET_USER_ID + " = bh." + COL_HISTORY_USER_ID +
+                " AND b." + COL_BUDGET_PERIOD_TYPE + " = bh." + COL_HISTORY_PERIOD_TYPE +
+                " AND b." + COL_BUDGET_START_DATE + " = bh." + COL_HISTORY_PERIOD_START_DATE +
+                " WHERE b." + COL_BUDGET_USER_ID + " = ? " +
+                " AND b." + COL_BUDGET_END_DATE + " < ? " +   // Budgets whose period has ended
+                " AND bh." + COL_HISTORY_ID + " IS NULL";   // And no history record exists for it yet
+        Log.d("DatabaseGateway", "Querying ended budgets without history for user " + userId + " before date " + todayDateStr_YYYY_MM_DD);
+        return db.rawQuery(query, new String[]{String.valueOf(userId), todayDateStr_YYYY_MM_DD});
     }
     public boolean checkEmailExists(String email) {
         SQLiteDatabase db = this.getReadableDatabase();

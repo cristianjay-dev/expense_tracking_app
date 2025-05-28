@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:menu="@menu/toolbar_menu">
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
     <TextView
         android:layout_width="wrap_content"
@@ -61,6 +60,16 @@
         android:layout_marginTop="8dp">
 
         <RadioButton
+        android:id="@+id/rbToday"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/colorOnBackground"
+        android:fontFamily="@font/poppins_semibold"
+        android:text="Today"
+        />
+
+        <RadioButton
             android:id="@+id/rbThisWeek"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -68,7 +77,7 @@
             android:textColor="@color/colorOnBackground"
             android:fontFamily="@font/poppins_semibold"
             android:text="Weekly"
-            android:checked="true"/> <!-- Default selection -->
+            />
 
         <RadioButton
             android:id="@+id/rbThisMonth"

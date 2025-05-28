@@ -2,62 +2,57 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/history_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
     android:fillViewport="true"
-    tools:context=".HomeFragment">
+    tools:context=".HistoryFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
+android:id="@+id/history_content_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvHistoryTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp">
+        android:layout_marginStart="8dp"
+        android:text="Budget History"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:fontFamily="@font/poppins_semibold"
+        android:textColor="@color/colorOnBackground"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp"/>
 
-        <!-- 1. Top Section: Budget Period (Using AutoCompleteTextView) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewBudgetHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:nestedScrollingEnabled="false"
+        tools:listitem="@layout/item_budget_history"
+        tools:itemCount="10"/>
 
+    <TextView
+        android:id="@+id/tvNoHistoryMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="50dp"
+        android:paddingBottom="50dp"
+        android:text="No budget history recorded yet."
+        android:gravity="center"
+        android:fontFamily="@font/poppins_regular"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textColor="?attr/colorOnBackground"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
-        <!-- 5. Recent Expenses List -->
-
-        <TextView
-            android:id="@+id/tvRecentExpensesLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="36dp"
-            android:layout_marginTop="316dp"
-            android:text="Recent Expenses"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/btnAddExpenseFromList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="+ Add New"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvRecentExpensesLabel"
-            app:layout_constraintBottom_toBottomOf="@id/tvRecentExpensesLabel"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewExpenses"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvRecentExpensesLabel"
-            app:layout_constraintVertical_bias="0.047"
-            tools:itemCount="3"
-            tools:listitem="@layout/item_expense" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </ScrollView>
