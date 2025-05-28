@@ -1,6 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/popup_modal"
+    android:backgroundTint="@color/colorBackground"> <!-- Use your desired dialog background -->
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarEditProfile"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/transparent"> <!-- Re-use your close button menu -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Profile"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnBackground"
+            android:layout_gravity="center_horizontal"/>
+    </androidx.appcompat.widget.Toolbar>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditFirstName"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:hint="First Name"
+        android:textColorHint="@color/colorPlaceholderText">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditFirstName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorOnBackground"
+            android:inputType="textPersonName|textCapWords"
+            android:fontFamily="@font/poppins_regular"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditLastName"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:hint="Last Name"
+        android:textColorHint="@color/colorPlaceholderText">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditLastName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorOnBackground"
+            android:inputType="textPersonName|textCapWords"
+            android:fontFamily="@font/poppins_regular"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditEmail"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColorHint="@color/colorPlaceholderText"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:hint="Email">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/colorOnBackground"
+            android:fontFamily="@font/poppins_regular"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Password Change Fields (Optional - can be a separate dialog/flow for security) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Password (Optional)"
+        android:fontFamily="@font/poppins_regular"
+        android:textColor="@color/colorOnBackground"
+        android:layout_marginTop="26dp"
+        android:textAppearance="?attr/textAppearanceSubtitle1"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditCurrentPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:textColorHint="@color/colorPlaceholderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:passwordToggleEnabled="true"
+        android:hint="Current Password">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditCurrentPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textColor="@color/colorOnBackground"
+            android:fontFamily="@font/poppins_regular"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditNewPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:textColorHint="@color/colorPlaceholderText"
+        android:layout_marginTop="8dp"
+        app:passwordToggleEnabled="true"
+        android:hint="New Password">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditNewPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textColor="@color/colorOnBackground"
+            android:fontFamily="@font/poppins_regular"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditConfirmPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxStrokeColor="@color/colorInputBorder"
+        android:textColorHint="@color/colorPlaceholderText"
+        android:layout_marginTop="8dp"
+        app:passwordToggleEnabled="true"
+        android:hint="Confirm New Password">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEditConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textColor="@color/colorOnBackground"
+            android:fontFamily="@font/poppins_regular"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <Button
+        android:id="@+id/btnDialogSaveChanges"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Save Changes"
+        android:fontFamily="@font/poppins_semibold"
+        android:textColor="@color/colorOnBackground"/>
+
+    <Button
+        android:id="@+id/btnDialogCancelEdit"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Cancel"
+        android:fontFamily="@font/poppins_regular"/>
+
+</LinearLayout>

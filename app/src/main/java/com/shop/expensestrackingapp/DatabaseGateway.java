@@ -501,5 +501,40 @@ public class DatabaseGateway extends SQLiteOpenHelper {
         Log.d("DatabaseGateway", "Deleting budget for user " + userId + ", period " + periodType + ", start " + budgetStartDate + ". Rows affected: " + result);
         return result > 0;
     }
+    public boolean verifyPassword(int userId, String enteredPassword) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        String storedPassword = null;
+        try {
+            cursor = db.query(TABLE_USERS, new String[]{COL_PASSWORD},
+                    COL_USER_ID + " = ?", new String[]{String.valueOf(userId)},
+                    null, null, null, "1");
+            if (cursor != null && cursor.moveToFirst()) {
+                storedPassword = cursor.getString(cursor.getColumnIndexOrThrow(COL_PASSWORD));
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseGateway", "Error verifying password", e);
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        // THIS IS PLAIN TEXT COMPARISON - NOT SECURE FOR PRODUCTION
+        // In a real app, 'enteredPassword' would be hashed and compared to 'storedPassword' (which is a hash)
+        return storedPassword != null && storedPassword.equals(enteredPassword);
+    }
+
+    public boolean updateUserPassword(int userId, String newPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        // In a real app, 'newPassword' should be securely hashed before storing
+        values.put(COL_PASSWORD, newPassword);
+        int rowsAffected = 0;
+        try {
+            rowsAffected = db.update(TABLE_USERS, values, COL_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+        } catch (Exception e) {
+            Log.e("DatabaseGateway", "Error updating password for user " + userId, e);
+        }
+        Log.d("DatabaseGateway", "updateUserPassword for userId " + userId + ": rowsAffected=" + rowsAffected);
+        return rowsAffected > 0;
+    }
 
 }

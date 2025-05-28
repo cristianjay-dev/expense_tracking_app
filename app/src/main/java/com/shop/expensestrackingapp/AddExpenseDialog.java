@@ -23,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
 
-import com.shop.expensestrackingapp.databinding.ActivityAddExpenseBinding;
+import com.shop.expensestrackingapp.databinding.AddExpenseDialogBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class AddExpenseDialog extends DialogFragment {
     public void setAddExpenseDialogListener(AddExpenseDialogListener listener) {
         this.listener = listener;
     }
-    private ActivityAddExpenseBinding binding; // Use ViewBinding for the layout
+    private AddExpenseDialogBinding binding; // Use ViewBinding for the layout
     private DatabaseGateway dbGateway;
     private SessionManager sessionManager;
     private List<CategoryItem> categoryList;
@@ -67,6 +67,7 @@ public class AddExpenseDialog extends DialogFragment {
 
         currentUserId = sessionManager.getUserId();
         if (currentUserId == -1) {
+
             Toast.makeText(requireContext(), "Error: User not logged in.", Toast.LENGTH_LONG).show();
             Log.e(TAG, "User ID not found in session. Cannot add expense.");
             dismiss();
@@ -76,7 +77,7 @@ public class AddExpenseDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = ActivityAddExpenseBinding.inflate(inflater, container, false);
+        binding = AddExpenseDialogBinding.inflate(inflater, container, false);
         // If you want a transparent background for the dialog window itself, so only your layout's background shows:
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

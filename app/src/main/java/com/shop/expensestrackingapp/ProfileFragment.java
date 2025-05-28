@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
@@ -33,15 +34,11 @@ import com.shop.expensestrackingapp.databinding.FragmentProfileBinding;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Objects;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements EditProfileDialog.EditProfileDialogListener{
     private FragmentProfileBinding binding;
     private SessionManager sessionManager;
     private DatabaseGateway dbHelper;
@@ -52,56 +49,44 @@ public class ProfileFragment extends Fragment {
     private static final int PROFILE_IMAGE_MAX_DIMENSION = 512;
     private static final int JPEG_COMPRESSION_QUALITY = 85;
     private static final int PNG_COMPRESSION_QUALITY = 100;
-    private static final long MAX_PROCESSED_IMAGE_SIZE_BYTES = 1 * 1024 * 1024; //
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final long MAX_PROCESSED_IMAGE_SIZE_BYTES = 1 * 1024 * 1024;
+    private static final String TAG = "ProfileFragment";//
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public ProfileFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ProfileFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(String param1, String param2) {
-        ProfileFragment fragment = new ProfileFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate called");
+
+        dbHelper = new DatabaseGateway(requireContext());
+        sessionManager = new SessionManager(requireContext());
+        currentUserId = sessionManager.getUserId();
+        Log.d(TAG, "Current User ID in onCreate: " + currentUserId);
+
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
+                    if (binding == null) return; // Fragment view might be destroyed
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            // Check file size before attempting to load into memory
                             long fileSize = getFileSizeFromUri(imageUri);
-                            if (fileSize == -1) { // Error getting size
+                            if (fileSize == -1 && getContext() != null) { // Check getContext() for Toast
                                 Toast.makeText(getContext(), "Could not determine image size.", Toast.LENGTH_SHORT).show();
                                 return;
                             }
                             if (fileSize > MAX_INITIAL_FILE_SIZE_BYTES) {
-                                String sizeMB = String.format("%.1f", MAX_INITIAL_FILE_SIZE_BYTES / (1024.0 * 1024.0));
-                                Toast.makeText(getContext(), "Selected image is too large. Please choose an image under " + sizeMB + "MB.", Toast.LENGTH_LONG).show();
-                                selectedImageBitmap = null; // Ensure it's cleared
-                                binding.profileImage.setImageResource(R.drawable.profile); // Reset preview
+                                if (getContext() != null) {
+                                    String sizeMB = String.format(Locale.US, "%.1f", MAX_INITIAL_FILE_SIZE_BYTES / (1024.0 * 1024.0));
+                                    Toast.makeText(getContext(), "Selected image is too large. Max " + sizeMB + "MB.", Toast.LENGTH_LONG).show();
+                                }
+                                selectedImageBitmap = null;
+                                binding.profileImage.setImageResource(R.drawable.profile);
                                 return;
                             }
                             Log.d(TAG, "Selected image file size: " + fileSize / 1024 + "KB");
@@ -111,7 +96,10 @@ public class ProfileFragment extends Fragment {
                 });
     }
     private long getFileSizeFromUri(Uri uri) {
-        if (getContext() == null) return -1;
+        if (getContext() == null) {
+            Log.e(TAG, "getFileSizeFromUri: Context is null!");
+            return -1;
+        }
         ContentResolver contentResolver = getContext().getContentResolver();
         Cursor cursor = null;
         try {
@@ -155,6 +143,10 @@ public class ProfileFragment extends Fragment {
 
 
     private void loadBitmapFromUri(Uri imageUri) {
+        if (getContext() == null || getActivity() == null) { // Check context/activity
+            Log.e(TAG, "loadBitmapFromUri: Context or Activity is null!");
+            return;
+        }
         InputStream imageStream = null;
         try {
             imageStream = requireActivity().getContentResolver().openInputStream(imageUri);
@@ -192,18 +184,17 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView called");
         binding = FragmentProfileBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
-        sessionManager = new SessionManager(requireContext());
-        dbHelper = new DatabaseGateway(requireContext());
-
-        if (!sessionManager.isLoggedIn()) {
+        // Ensure session and user ID are valid before proceeding
+        if (!sessionManager.isLoggedIn() || currentUserId == -1) {
+            Log.w(TAG, "User not logged in or invalid ID. Redirecting to login.");
             redirectToLogin();
             return view;
         }
 
-        currentUserId = sessionManager.getUserId();
         loadUserProfileData(currentUserId);
 
         binding.editIcon.setOnClickListener(v -> openImagePicker());
@@ -212,19 +203,48 @@ public class ProfileFragment extends Fragment {
             sessionManager.logout();
             redirectToLogin();
         });
-        binding.btnEditProfile.setOnClickListener(v -> {
-            showDialog();
-        });
+        binding.btnEditProfile.setOnClickListener(v -> showEditProfileDialog());
 
         return view;
     }
+    private void showEditProfileDialog() {
+        if (binding == null || getContext() == null || sessionManager == null) {
+            Log.e(TAG, "Cannot show edit dialog, critical components missing.");
+            if (getContext() != null) Toast.makeText(getContext(), "Error preparing edit profile.", Toast.LENGTH_SHORT).show();
+            return;
+
+        }
+        String currentFirstName = "";
+        String currentLastName = "";
+        String currentEmail = sessionManager.getEmail();
+
+        Cursor userCursor = null;
+        try {
+            userCursor = dbHelper.getUserById(currentUserId);
+            if (userCursor != null && userCursor.moveToFirst()) {
+                currentFirstName = userCursor.getString(userCursor.getColumnIndexOrThrow(DatabaseGateway.COL_FIRSTNAME));
+                currentLastName = userCursor.getString(userCursor.getColumnIndexOrThrow(DatabaseGateway.COL_LASTNAME));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error fetching user details for edit dialog", e);
+        } finally {
+            if (userCursor != null) userCursor.close();
+
+        }
+        FragmentManager fragmentManager = getParentFragmentManager(); // Use getParentFragmentManager in Fragments
+        EditProfileDialog editDialog = EditProfileDialog.newInstance(
+                currentFirstName != null ? currentFirstName : "",
+                currentLastName != null ? currentLastName : "",
+                currentEmail != null ? currentEmail : ""
+        );
+        editDialog.setEditProfileDialogListener(this); // Set ProfileFragment as the listener
+        editDialog.show(fragmentManager, "EditProfileDialogTag");
+        Log.d(TAG, "Showing EditProfileDialog with FirstName: " + currentFirstName + ", Email: " + currentEmail);
+    }
 
     private void loadUserProfileData(int userId) {
-        // ... (same as before)
-        if (userId == -1) {
-            Log.w(TAG, "loadUserProfileData: Invalid userId (-1)");
-            Toast.makeText(getContext(), "User session error.", Toast.LENGTH_SHORT).show();
-            redirectToLogin();
+        if (binding == null || getContext() == null || dbHelper == null) {
+            Log.e(TAG, "loadUserProfileData: Pre-requisites not met (binding, context, or dbHelper is null).");
             return;
         }
 
@@ -237,7 +257,7 @@ public class ProfileFragment extends Fragment {
                 String email = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseGateway.COL_EMAIL));
                 byte[] imageBytes = cursor.getBlob(cursor.getColumnIndexOrThrow(DatabaseGateway.COL_PROFILE_IMAGE));
 
-                String fullName = (firstName != null ? firstName : "") + (lastName != null ? " " + lastName : "");
+                String fullName = (firstName != null ? firstName : "") + (lastName != null && !lastName.isEmpty() ? " " + lastName : "");
                 binding.textName.setText(fullName.trim().isEmpty() ? "N/A" : fullName.trim());
                 binding.textEmail.setText(email != null ? email : "N/A");
 
@@ -269,6 +289,7 @@ public class ProfileFragment extends Fragment {
             }
         }
     }
+
 
     private void openImagePicker() {
         // ... (same as before)
@@ -355,6 +376,50 @@ public class ProfileFragment extends Fragment {
             }
         }
         return null;
+    }
+    public void onProfileUpdated(String newFirstName, String newLastName, String newEmail) {
+        Log.d(TAG, "onProfileUpdated callback: Name=" + newFirstName + " " + newLastName + ", Email=" + newEmail);
+        if (dbHelper == null || sessionManager == null || currentUserId == -1) {
+            if (getContext() != null) Toast.makeText(getContext(), "Error updating profile. Session/DB invalid.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String oldEmail = sessionManager.getEmail();
+        if (!newEmail.equalsIgnoreCase(oldEmail) && dbHelper.checkEmailExists(newEmail)) {
+            Toast.makeText(getContext(), "This email is already registered.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        boolean success = dbHelper.updateUserProfile(currentUserId, newFirstName, newLastName, newEmail);
+        if (success) {
+            Toast.makeText(getContext(), "Profile details updated successfully!", Toast.LENGTH_SHORT).show();
+            sessionManager.updateFirstName(newFirstName); // Assuming your SessionManager has this
+            sessionManager.updateEmail(newEmail);
+            loadUserProfileData(currentUserId); // Refresh UI
+        } else {
+            Toast.makeText(getContext(), "Failed to update profile details.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onPasswordChanged(String currentPassword, String newPassword) {
+        Log.d(TAG, "onPasswordChanged callback received.");
+        if (dbHelper == null || currentUserId == -1) {
+            if (getContext() != null) Toast.makeText(getContext(), "Error changing password. Session/DB invalid.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!dbHelper.verifyPassword(currentUserId, currentPassword)) { // You need to implement verifyPassword
+            Toast.makeText(getContext(), "Current password incorrect.", Toast.LENGTH_LONG).show();
+
+            return;
+        }
+        boolean success = dbHelper.updateUserPassword(currentUserId, newPassword); // You need to implement updateUserPassword
+        if (success) {
+            Toast.makeText(getContext(), "Password changed successfully!", Toast.LENGTH_SHORT).show();
+            // No UI refresh needed here typically, unless you display "password last changed"
+        } else {
+            Toast.makeText(getContext(), "Failed to change password.", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
