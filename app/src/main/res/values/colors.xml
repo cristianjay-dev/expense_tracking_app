@@ -21,4 +21,6 @@
 
     <color name="colorOnSave">#07B0C7</color>
     <color name="colorOnExpense">#FF3B30</color>
+    <color name="colorOnPositive">#4CAF50</color>
+    <color name="colorOnNegative">#F44336</color>
 </resources>

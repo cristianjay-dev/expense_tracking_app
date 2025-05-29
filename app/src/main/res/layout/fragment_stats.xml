@@ -1,14 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:fillViewport="true"
     tools:context=".StatsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/tvStatsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Spending Statistics"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnBackground"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Period Selector -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilStatsPeriod"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Period"
+            android:fontFamily="@font/poppins_regular"
+            app:boxStrokeColor="@color/colorInputBorder"
+            android:textColorHint="@color/colorPlaceholderText"
+            android:layout_marginBottom="16dp">
+
+            <AutoCompleteTextView
+                android:id="@+id/actvStatsPeriod"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:fontFamily="@font/poppins_regular"
+                android:textColor="@color/colorOnBackground"
+                tools:text="This Month"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Overall Summary Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardStatsSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/colorOnCard"
+            android:layout_marginBottom="16dp">
+
+            <!-- ... (content of summary card remains the same) ... -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvSummaryPeriodTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="This Month's Performance"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginBottom="8dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_regular"
+                        android:text="Budget: "/>
+                    <TextView
+                        android:id="@+id/tvSummaryBudgetedAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/poppins_semibold"
+                        tools:text="₱5,000.00"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Spent: "
+                        android:fontFamily="@font/poppins_regular"/>
+                    <TextView
+                        android:id="@+id/tvSummarySpentAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/poppins_semibold"
+                        tools:text="₱3,500.00"/>
+                </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progressSummary"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:max="100"
+
+                    tools:progress="70"/>
+                <TextView
+                    android:id="@+id/tvSummaryPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:fontFamily="@font/poppins_regular"
+                    tools:text="70% of budget spent"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvSummaryDifferenceLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_regular"
+                        tools:text="Remaining: " />
+                    <TextView
+                        android:id="@+id/tvSummaryDifferenceAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/poppins_semibold"
+                        tools:text="₱1,500.00" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Title for Pie Chart -->
+        <TextView
+            android:id="@+id/tvTitleSpendingByCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Spending by Category"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChartCategorySpending"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="24dp"
+            />
+
+
+        <TextView
+            android:id="@+id/tvTitleMonthlySpendingTrend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Monthly Spending Trend"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:fontFamily="@font/poppins_semibold"
+            android:textColor="@color/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChartSpendingTrend"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Message for no data -->
+        <TextView
+            android:id="@+id/tvNoStatsData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Not enough data to display statistics. Start tracking your expenses!"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/colorOnBackground"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+    </LinearLayout>
+</ScrollView>

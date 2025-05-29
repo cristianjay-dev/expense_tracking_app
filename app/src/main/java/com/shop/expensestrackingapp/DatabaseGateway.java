@@ -9,6 +9,11 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class DatabaseGateway extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "SmartSpend.db";
@@ -535,6 +540,64 @@ public class DatabaseGateway extends SQLiteOpenHelper {
         }
         Log.d("DatabaseGateway", "updateUserPassword for userId " + userId + ": rowsAffected=" + rowsAffected);
         return rowsAffected > 0;
+    }
+    public Cursor getCategorySpendingForPeriod(int userId, String startDate, String endDate) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String startDateTime = startDate + " 00:00:00";
+        String endDateTime = endDate + " 23:59:59";
+
+        String query = "SELECT c." + COL_CATEGORY_NAME + ", SUM(e." + COL_EXPENSE_AMOUNT + ") as total_spent " +
+                "FROM " + TABLE_EXPENSES + " e " +
+                "JOIN " + TABLE_CATEGORIES + " c ON e." + COL_EXPENSE_CATEGORY_ID_FK + " = c." + COL_CATEGORY_ID +
+                " WHERE e." + COL_EXPENSE_USER_ID + " = ? AND " +
+                "e." + COL_EXPENSE_TIMESTAMP + " >= ? AND e." + COL_EXPENSE_TIMESTAMP + " <= ? " +
+                "GROUP BY c." + COL_CATEGORY_NAME + " " +
+                "HAVING total_spent > 0 " + // Only categories with spending
+                "ORDER BY total_spent DESC";
+
+        Log.d("DatabaseGateway", "Querying category spending for user " + userId + " from " + startDateTime + " to " + endDateTime);
+        return db.rawQuery(query, new String[]{String.valueOf(userId), startDateTime, endDateTime});
+    }
+
+    // Method to get total spending for each of the last N months
+    // Returns (MonthYearString e.g., "2023-05", TotalSpent)
+    public Cursor getMonthlySpendingTrend(int userId, int numberOfMonths) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Simpler query: Get all expenses from start of (CurrentMonth - N + 1) to end of CurrentMonth
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -(numberOfMonths - 1)); // Go back N-1 months to get the start of the N-month window
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        String startDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.getTime());
+        String endDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()); // Today
+
+        String startDateTime = startDate + " 00:00:00";
+        String endDateTime = endDate + " 23:59:59";
+
+
+        String query = "SELECT strftime('%Y-%m', " + COL_EXPENSE_TIMESTAMP + ") as month_year, " +
+                "SUM(" + COL_EXPENSE_AMOUNT + ") as total_spent " +
+                "FROM " + TABLE_EXPENSES + " " +
+                "WHERE " + COL_EXPENSE_USER_ID + " = ? AND " +
+                COL_EXPENSE_TIMESTAMP + " >= ? AND " + COL_EXPENSE_TIMESTAMP + " <= ? " +
+                "GROUP BY month_year " +
+                "ORDER BY month_year ASC"; // Oldest month first for trend line
+
+        Log.d("DatabaseGateway", "Querying monthly spending trend for user " + userId + " for last " + numberOfMonths + " months (approx). Start: " + startDate);
+        return db.rawQuery(query, new String[]{String.valueOf(userId), startDateTime, endDateTime});
+    }
+
+    // Method to get a specific budget for a period (e.g., for "Last Month")
+    // This is similar to getCurrentBudget but can look for a budget whose start_date matches exactly.
+    public Cursor getBudgetForSpecificPeriod(int userId, String periodType, String periodStartDate) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_BUDGETS +
+                " WHERE " + COL_BUDGET_USER_ID + " = ? AND " +
+                COL_BUDGET_PERIOD_TYPE + " = ? AND " +
+                COL_BUDGET_START_DATE + " = ? " + // Match exact start date
+                "ORDER BY " + COL_BUDGET_ID + " DESC LIMIT 1";
+        Log.d("DatabaseGateway", "Querying specific budget for user " + userId + ", type " + periodType + ", start " + periodStartDate);
+        return db.rawQuery(query, new String[]{String.valueOf(userId), periodType, periodStartDate});
     }
 
 }

@@ -55,7 +55,7 @@ public class DashboardActivity extends AppCompatActivity implements AddExpenseDi
         }
 
         binding.navHome.setOnClickListener(v -> loadFragment(new HomeFragment(), HOME_FRAGMENT_TAG));
-        binding.navHistory.setOnClickListener(v -> loadFragment(new HistoryFragment(), "HistoryFragmentTag"));
+        binding.navHistory.setOnClickListener(v -> loadFragment(new HistoryFragment(), "HistoryFragment"));
         binding.navStats.setOnClickListener(v -> loadFragment(new StatsFragment(), "StatsFragmentTag"));
         binding.navProfile.setOnClickListener(v -> loadFragment(new ProfileFragment(), "ProfileFragmentTag"));
 
