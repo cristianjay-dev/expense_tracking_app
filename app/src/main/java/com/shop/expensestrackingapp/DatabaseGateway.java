@@ -600,4 +600,6 @@ public class DatabaseGateway extends SQLiteOpenHelper {
         return db.rawQuery(query, new String[]{String.valueOf(userId), periodType, periodStartDate});
     }
 
+
+
 }

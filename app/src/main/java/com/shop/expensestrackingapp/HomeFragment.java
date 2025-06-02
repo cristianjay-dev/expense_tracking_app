@@ -78,7 +78,6 @@ public class HomeFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         Log.d(TAG, "onCreateView: Inflating layout.");
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -91,7 +90,7 @@ public class HomeFragment extends Fragment implements
         if (binding == null) { Log.e(TAG, "Binding is null in onViewCreated!"); return; }
         if (currentUserId == -1) { /* ... error handling ... */ return; }
 
-        setupExpenseViewPeriodDropdown(); // Will now include "Today"
+        setupExpenseViewPeriodDropdown();
         setupRecyclerView();
         setupActionButtons();
 
@@ -111,11 +110,9 @@ public class HomeFragment extends Fragment implements
         else if ("MONTHLY".equals(selectedExpenseViewPeriodType)) binding.actvBudgetPeriod.setText(periods[2], false);
         else binding.actvBudgetPeriod.setText(periods[3], false);
 
-        // Set default text based on selectedExpenseViewPeriodType
         binding.actvBudgetPeriod.setOnItemClickListener((parent, Lview, position, id) -> {
             String selectedText = (String) parent.getItemAtPosition(position);
             Log.d(TAG, "Expense view period selected from dropdown: " + selectedText);
-            // RE-ADD "Today" -> "DAILY" MAPPING
             if ("Today".equals(selectedText)) selectedExpenseViewPeriodType = "DAILY";
             else if ("This Week".equals(selectedText)) selectedExpenseViewPeriodType = "WEEKLY";
             else if ("This Month".equals(selectedText)) selectedExpenseViewPeriodType = "MONTHLY";
@@ -200,13 +197,18 @@ public class HomeFragment extends Fragment implements
     // Public method to be called by DashboardActivity after an expense is added
     public void refreshAllData() {
         Log.d(TAG, "refreshAllData called. User ID: " + currentUserId);
-        if (!isAdded() || binding == null || currentUserId == -1 || currentExpenseViewStartDate == null || currentExpenseViewEndDate == null) {
-            Log.w(TAG, "Cannot refresh data: Conditions not met.");
-            if (binding != null) updateUIWithNoActiveBudget(); // Update UI to reflect no data state
+        if (!isAdded() || binding == null || currentUserId == -1 ) {
+            Log.w(TAG, "Cannot refresh data: Pre-conditions not met.");
+            if (binding != null) updateUIWithNoActiveBudget();
             if (expenseList != null) expenseList.clear();
             if (expenseAdapter != null) expenseAdapter.notifyDataSetChanged();
             return;
         }
+        if (currentExpenseViewStartDate == null || currentExpenseViewEndDate == null) {
+            Log.d(TAG, "refreshAllData: Expense view date range was null, updating it now based on: " + selectedExpenseViewPeriodType);
+            updateDateRangeForExpenseViewPeriod();
+        }
+        archiveEndedBudgets();
         loadActiveBudget();           // 1. Load the active (Weekly/Monthly) budget
         loadExpensesForViewPeriod();  // 2. Load expenses for the currently selected view period (Today, Week, Month, All Time)
         updateBudgetDisplay();        // 3. Update the entire budget card display using active budget and view period expenses
@@ -214,11 +216,8 @@ public class HomeFragment extends Fragment implements
     }
 
     private void loadActiveBudget() {
-        if (binding == null || dbGateway == null) { Log.e(TAG, "loadActiveBudget: binding or dbGateway is null!");
-            return;
-        }
+        if (binding == null || dbGateway == null) { Log.e(TAG, "loadActiveBudget: binding or dbGateway is null!"); return; }
         Log.d(TAG, "loadActiveBudget: Checking for active D/W/M budget for today.");
-
 
         this.activeBudgetAmount = 0.0;
         this.activeBudgetPeriodType = null;
@@ -234,7 +233,8 @@ public class HomeFragment extends Fragment implements
         Cursor budgetCursor = null;
         String foundPeriodType = null;
 
-        Log.d(TAG, "loadActiveBudget: Checking for DAILY budget active on " + todayStr);
+        // Priority: 1. DAILY, 2. WEEKLY, 3. MONTHLY
+        Log.d(TAG, "loadActiveBudget: Checking for DAILY budget active on " + todayStr + " for user " + currentUserId);
         budgetCursor = dbGateway.getCurrentBudget(currentUserId, "DAILY", todayStr);
         if (budgetCursor != null && budgetCursor.moveToFirst()) {
             foundPeriodType = "DAILY";
@@ -268,7 +268,10 @@ public class HomeFragment extends Fragment implements
                     Date date = sdfDbTimestamp.parse(rawSetDate);
                     this.activeBudgetSetDateText = "Budget set on " + sdfDisplayDate.format(date);
                 } else { this.activeBudgetSetDateText = "Budget set recently"; }
-            } catch (ParseException e) { /* ... */ }
+            } catch (ParseException e) {
+                this.activeBudgetSetDateText = "Set: " + (rawSetDate != null ? rawSetDate.substring(0, Math.min(rawSetDate.length(), 10)) : "N/A");
+                Log.e(TAG, "Error parsing active budget set date: " + rawSetDate, e);
+            }
             if (deleteButtonInCard != null) deleteButtonInCard.setVisibility(View.VISIBLE);
         } else {
             Log.d(TAG, "loadActiveBudget: No active Daily, Weekly, or Monthly budget found for today.");
@@ -333,7 +336,7 @@ public class HomeFragment extends Fragment implements
     private void updateBudgetDisplay() { // Renamed from updateBudgetUI
         if (binding == null) return;
         Log.d(TAG, "Updating Budget Display. ActiveBudget: " + activeBudgetAmount + " (" + activeBudgetPeriodType + ")" +
-                ", SpentInViewPeriod ("+ selectedExpenseViewPeriodType +"): " + totalSpentInSelectedViewPeriod);
+                ", TotalSpentInViewPeriod ("+ selectedExpenseViewPeriodType +"): " + totalSpentInSelectedViewPeriod);
 
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("fil", "PH"));
         currencyFormat.setMinimumFractionDigits(2);
@@ -341,7 +344,6 @@ public class HomeFragment extends Fragment implements
 
             // Card for "Total Spent (This Period)" - uses totalSpentInViewPeriod
         binding.tvTotalSpentAmount.setText("- " + currencyFormat.format(totalSpentInSelectedViewPeriod));
-
 
         // Budget Status Card - uses activeBudgetAmount and activeBudgetSetDateStr
         if (activeBudgetAmount > 0 && activeBudgetPeriodType != null) {
@@ -355,30 +357,25 @@ public class HomeFragment extends Fragment implements
             if(deleteBtn!=null) deleteBtn.setVisibility(View.VISIBLE);
 
                 // For progress, calculate expenses WITHIN the active budget's own date range
-            double spentForProgressCalculation;
-            // Determine which "spent" amount to use for progress against the active budget
-            if ("DAILY".equals(activeBudgetPeriodType)) {
-                // If the active budget is DAILY, then progress is today's spending against today's budget
-                spentForProgressCalculation = totalSpentInSelectedViewPeriod; // Assuming selectedExpenseViewPeriodType is also DAILY
-                Log.d(TAG, "Calculating DAILY budget progress using totalSpentInSelectedViewPeriod: " + spentForProgressCalculation);
+            double spentAgainstActiveBudget = 0.0;
+            if (activeBudget_RecordStartDate != null && activeBudget_RecordEndDate != null) {
+                spentAgainstActiveBudget = dbGateway.getTotalExpensesForPeriod(currentUserId, activeBudget_RecordStartDate, activeBudget_RecordEndDate);
+                Log.d(TAG, "Spent against active " + activeBudgetPeriodType + " budget (Range: "+activeBudget_RecordStartDate+" to "+activeBudget_RecordEndDate+"): " + spentAgainstActiveBudget);
             } else {
-                // If active budget is WEEKLY or MONTHLY, calculate spending within *its* specific period
-                if (activeBudget_RecordStartDate != null && activeBudget_RecordEndDate != null) {
-                    spentForProgressCalculation = dbGateway.getTotalExpensesForPeriod(currentUserId, activeBudget_RecordStartDate, activeBudget_RecordEndDate);
-                    Log.d(TAG, "Calculating " + activeBudgetPeriodType + " budget progress using expenses from " + activeBudget_RecordStartDate + " to " + activeBudget_RecordEndDate + ": " + spentForProgressCalculation);
-                } else {
-                    spentForProgressCalculation = 0; // Should not happen if active budget is loaded correctly
-                    Log.w(TAG, "Active budget (" + activeBudgetPeriodType + ") dates are null, progress spent is 0.");
+                Log.w(TAG, "Active budget (" + activeBudgetPeriodType + ") has null dates, cannot calculate specific spent amount for progress. Using totalSpentInViewPeriod as fallback if view matches budget period.");
+                // Fallback (less accurate if view period doesn't match budget period)
+                if (selectedExpenseViewPeriodType.equals(activeBudgetPeriodType)) {
+                    spentAgainstActiveBudget = totalSpentInSelectedViewPeriod;
                 }
             }
 
-            double remainingForActiveBudget = activeBudgetAmount - spentForProgressCalculation;
+            double remainingForActiveBudget = activeBudgetAmount - spentAgainstActiveBudget;
             binding.tvRemainingBudgetAmount.setText(currencyFormat.format(remainingForActiveBudget));
 
             int progress = 0;
-            if (activeBudgetAmount > 0) {
-                progress = (int) ((spentForProgressCalculation * 100.0) / activeBudgetAmount);
-                progress = (int) Math.round(progress); // Round to nearest int
+            if (activeBudgetAmount > 0) { // Avoid division by zero
+                double percentage = (spentAgainstActiveBudget * 100.0) / activeBudgetAmount;
+                progress = (int) Math.round(percentage);
             }
             binding.progressBarBudget.setProgress(Math.max(0, Math.min(progress, 100)));
             binding.tvBudgetPercentage.setText(Math.max(0, Math.min(progress, 100)) + "% spent");
@@ -395,19 +392,17 @@ public class HomeFragment extends Fragment implements
 
     private void updateUIWithNoActiveBudget() { // When no specific (Weekly/Monthly) budget is displayed
         if (binding == null) return;
-        Log.d(TAG, "updateUIWithNoActiveBudget. Total Spent in view period (" + selectedExpenseViewPeriodType + "): " + totalSpentInSelectedViewPeriod);
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("fil", "PH"));
         currencyFormat.setMinimumFractionDigits(2);
         currencyFormat.setMaximumFractionDigits(2);
 
-        // Budget card shows a general message
-        binding.tvRemainingBudgetLabel.setText("Budget Overview");
+        binding.tvRemainingBudgetLabel.setText("Budget Status"); // More generic
         binding.tvRemainingBudgetAmount.setText("No active budget set");
         binding.tvBudgetUpdatedDate.setText("Set a budget to track progress");
-        binding.tvRemainingBudgetAmount.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorOnBackground)); // Default text color
+
+        binding.tvRemainingBudgetAmount.setTextColor(ContextCompat.getColor(requireContext(), R.color.colorOnBackground));
 
         binding.tvTotalBudgetAmount.setVisibility(View.GONE);
-        binding.tvBudgetUpdatedDate.setText(activeBudgetSetDateText); // Shows "No active budget set"
         binding.progressBarBudget.setVisibility(View.INVISIBLE);
         binding.tvBudgetPercentage.setVisibility(View.INVISIBLE);
         View deleteBtn = binding.cardBudgetStatus.findViewById(R.id.btnDeleteBudget);
@@ -498,27 +493,72 @@ public class HomeFragment extends Fragment implements
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
+    private void archiveEndedBudgets() {
+        if (dbGateway == null || currentUserId == -1 || !isAdded()) { /* ... guard ... */
+            return;
+        }
+        Log.d(TAG, "archiveEndedBudgets: Checking for user " + currentUserId);
+
+        String todayDateStr = sdfDbDateOnly.format(new Date()); // e.g., "2025-05-29"
+        Cursor endedBudgetsCursor = null;
+        try {
+            endedBudgetsCursor = dbGateway.getEndedBudgetsWithoutHistory(currentUserId, todayDateStr);
+
+            if (endedBudgetsCursor != null) {
+                Log.d(TAG, "archiveEndedBudgets: Found " + endedBudgetsCursor.getCount() + " ended budget(s) without history.");
+                // ... (column index fetching) ...
+
+                while (endedBudgetsCursor.moveToNext()) {
+                    // ... (get data from cursor: periodType, budgetAmount, startDate, endDate) ...
+                    String periodType = endedBudgetsCursor.getString(endedBudgetsCursor.getColumnIndexOrThrow(DatabaseGateway.COL_BUDGET_PERIOD_TYPE));
+                    double budgetAmount = endedBudgetsCursor.getDouble(endedBudgetsCursor.getColumnIndexOrThrow(DatabaseGateway.COL_BUDGET_AMOUNT));
+                    String budgetStartDate = endedBudgetsCursor.getString(endedBudgetsCursor.getColumnIndexOrThrow(DatabaseGateway.COL_BUDGET_START_DATE));
+                    String budgetEndDate = endedBudgetsCursor.getString(endedBudgetsCursor.getColumnIndexOrThrow(DatabaseGateway.COL_BUDGET_END_DATE));
+
+
+                    double totalSpentForThisBudgetPeriod = dbGateway.getTotalExpensesForPeriod(currentUserId, budgetStartDate, budgetEndDate);
+                    String summaryCreatedAt = sdfDbTimestamp.format(new Date());
+
+                    Log.i(TAG, "ARCHIVING: User=" + currentUserId + ", Type=" + periodType +
+                            ", Start=" + budgetStartDate + ", End=" + budgetEndDate +
+                            ", BudgetSet=" + budgetAmount + ", ActuallySpent=" + totalSpentForThisBudgetPeriod);
+
+                    dbGateway.addBudgetHistory(currentUserId, periodType, budgetAmount, totalSpentForThisBudgetPeriod,
+                            budgetStartDate, budgetEndDate, summaryCreatedAt);
+                }
+                Log.d(TAG, "archiveEndedBudgets: Archived all ended budgets without history for user " + currentUserId);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error archiving ended budgets for user " + currentUserId, e);
+            if (getContext() != null) {
+                Toast.makeText(getContext(), "Error archiving ended budgets.", Toast.LENGTH_SHORT).show();
+            }
+        } finally {
+            if (endedBudgetsCursor != null) {
+                endedBudgetsCursor.close();
+            }
+        }
+
+    }
 
     @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: Resuming. Current expense view period: " + selectedExpenseViewPeriodType);
         if (currentUserId != -1) {
-            if (binding == null)
-        {
-            Log.e(TAG, "Binding is null in onResume!");
-            return;
-        }
+            if (binding == null) {
+                if (getView() != null) binding = FragmentHomeBinding.bind(getView());
+                else { Log.e(TAG, "onResume: getView() is null!"); return; }
+            }
 
-            // If current view period is not initialized or dropdown is empty, default to WEEKLY
-        if (currentExpenseViewStartDate == null || currentExpenseViewEndDate == null ||
-                (binding.actvBudgetPeriod != null && binding.actvBudgetPeriod.getText().toString().isEmpty())) {
-            Log.d(TAG, "onResume: Expense view period not fully set, defaulting to DAILY.");
-            selectedExpenseViewPeriodType = "DAILY";
-            if(binding.actvBudgetPeriod != null) binding.actvBudgetPeriod.setText("Today", false);
-            updateDateRangeForExpenseViewPeriod();
-        }
-        refreshAllData();
+            if (currentExpenseViewStartDate == null || currentExpenseViewEndDate == null ||
+                    (binding.actvBudgetPeriod != null && binding.actvBudgetPeriod.getText().toString().isEmpty())) {
+                Log.d(TAG, "onResume: Expense view period not fully set, defaulting to DAILY.");
+                selectedExpenseViewPeriodType = "DAILY";
+                if(binding.actvBudgetPeriod != null) binding.actvBudgetPeriod.setText("Today", false);
+                updateDateRangeForExpenseViewPeriod();
+            }
+            refreshAllData();
         } else {
             Log.w(TAG, "onResume: No user logged in, cannot refresh data.");
             if (binding != null) {
